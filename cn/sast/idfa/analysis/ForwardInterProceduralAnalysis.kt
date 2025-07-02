@@ -44,6 +44,9 @@ import soot.SootMethod
 import soot.jimple.infoflow.collect.ConcurrentHashSet
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor
 import soot.toolkits.graph.DirectedGraph
+import java.time.LocalDateTime
+import org.utbot.common.LoggingKt
+import org.utbot.common.Maybe
 
 @SourceDebugExtension(["SMAP\nForwardInterProceduralAnalysis.kt\nKotlin\n*S Kotlin\n*F\n+ 1 ForwardInterProceduralAnalysis.kt\ncn/sast/idfa/analysis/ForwardInterProceduralAnalysis\n+ 2 _Collections.kt\nkotlin/collections/CollectionsKt___CollectionsKt\n+ 3 CoroutineScope.kt\nkotlinx/coroutines/CoroutineScopeKt\n+ 4 FixPointStatus.kt\ncn/sast/idfa/analysis/FixPointStatus$Companion\n*L\n1#1,678:1\n1279#2,2:679\n1293#2,2:681\n1296#2:684\n1557#2:685\n1628#2,3:686\n326#3:683\n10#4:689\n*S KotlinDebug\n*F\n+ 1 ForwardInterProceduralAnalysis.kt\ncn/sast/idfa/analysis/ForwardInterProceduralAnalysis\n*L\n341#1:679,2\n341#1:681,2\n341#1:684\n512#1:685\n512#1:686,3\n342#1:683\n663#1:689\n*E\n"])
 public abstract class ForwardInterProceduralAnalysis<M, N, A, R, CTX extends Context<M, N, A>> : InterProceduralAnalysis<M, N, A> {
@@ -575,6 +578,148 @@ public abstract class ForwardInterProceduralAnalysis<M, N, A, R, CTX extends Con
    @JvmStatic
    fun `logger$lambda$13`(): Unit {
       return Unit.INSTANCE;
+   }
+
+   @JvmStatic
+   fun `doAnalysis$1$invokeSuspend$$inlined$bracket$1`(`$msg`: java.lang.String): Any {
+      return "Started: ${`$msg`}";
+   }
+
+   @JvmStatic
+   fun `doAnalysis$1$invokeSuspend$$inlined$bracket$2`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$res`: ObjectRef
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} ${Result.box-impl(
+         Result.constructor-impl((`$res`.element as Maybe).getOrThrow())
+      )}";
+   }
+
+   @JvmStatic
+   fun `doAnalysis$1$invokeSuspend$$inlined$bracket$3`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} <Nothing>";
+   }
+
+   @JvmStatic
+   fun `doAnalysis$1$invokeSuspend$$inlined$bracket$4`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$t`: java.lang.Throwable
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} :: EXCEPTION :: ${Result.box-impl(
+         Result.constructor-impl(ResultKt.createFailure(`$t`))
+      )}";
+   }
+
+   @JvmStatic
+   fun `doAnalysis$1$invokeSuspend$$inlined$bracket$5`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$res`: ObjectRef
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} ${Result.box-impl(
+         Result.constructor-impl((`$res`.element as Maybe).getOrThrow())
+      )}";
+   }
+
+   @JvmStatic
+   fun `doAnalysis$1$invokeSuspend$$inlined$bracket$6`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} <Nothing>";
+   }
+
+   @JvmStatic
+   fun `doAnalyze$jobs$1$1$invokeSuspend$lambda$2$$inlined$bracket$1`(`$msg`: java.lang.String): Any {
+      return "Started: ${`$msg`}";
+   }
+
+   @JvmStatic
+   fun `doAnalyze$jobs$1$1$invokeSuspend$lambda$2$$inlined$bracket$2`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$res`: ObjectRef,
+      var4: Any
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      var var10000: java.lang.String = LoggingKt.elapsedSecFrom(var1);
+      val var10001: java.lang.String = `$msg`;
+      val it: Any = Result.constructor-impl((`$res`.element as Maybe).getOrThrow());
+      if (Result.isFailure-impl(it)) {
+         val var7: java.lang.Throwable = Result.exceptionOrNull-impl(it);
+         var10000 = if (var7 != null) var7.getMessage() else null;
+      } else {
+         var10000 = Result.box-impl(it);
+      }
+      return "Finished (in $var10000): $var10001 $var10000";
+   }
+
+   @JvmStatic
+   fun `doAnalyze$jobs$1$1$invokeSuspend$lambda$2$$inlined$bracket$3`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} <Nothing>";
+   }
+
+   @JvmStatic
+   fun `doAnalyze$jobs$1$1$invokeSuspend$lambda$2$$inlined$bracket$4`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$t`: java.lang.Throwable,
+      var4: Any
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      var var10000: java.lang.String = LoggingKt.elapsedSecFrom(var1);
+      val var10001: java.lang.String = `$msg`;
+      val it: Any = Result.constructor-impl(ResultKt.createFailure(`$t`));
+      if (Result.isFailure-impl(it)) {
+         val var7: java.lang.Throwable = Result.exceptionOrNull-impl(it);
+         var10000 = if (var7 != null) var7.getMessage() else null;
+      } else {
+         var10000 = Result.box-impl(it);
+      }
+      return "Finished (in $var10000): $var10001 :: EXCEPTION :: $var10000";
+   }
+
+   @JvmStatic
+   fun `doAnalyze$jobs$1$1$invokeSuspend$lambda$2$$inlined$bracket$5`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$res`: ObjectRef,
+      var4: Any
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      var var10000: java.lang.String = LoggingKt.elapsedSecFrom(var1);
+      val var10001: java.lang.String = `$msg`;
+      val it: Any = Result.constructor-impl((`$res`.element as Maybe).getOrThrow());
+      if (Result.isFailure-impl(it)) {
+         val var7: java.lang.Throwable = Result.exceptionOrNull-impl(it);
+         var10000 = if (var7 != null) var7.getMessage() else null;
+      } else {
+         var10000 = Result.box-impl(it);
+      }
+      return "Finished (in $var10000): $var10001 $var10000";
+   }
+
+   @JvmStatic
+   fun `doAnalyze$jobs$1$1$invokeSuspend$lambda$2$$inlined$bracket$6`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} <Nothing>";
    }
 
    open fun ForwardInterProceduralAnalysis() {
