@@ -28,6 +28,8 @@ import java.util.IdentityHashMap
 import java.util.LinkedHashMap
 import java.util.LinkedHashSet
 import java.util.NoSuchElementException
+import java.util.Comparator
+import kotlin.comparisons.compareValues
 import java.util.Map.Entry
 import kotlin.jvm.internal.SourceDebugExtension
 import kotlinx.collections.immutable.ExtensionsKt
@@ -60,6 +62,18 @@ public data class SAConfiguration(builtinAnalysisConfig: BuiltinAnalysisConfig =
 
    @Transient
    private final val disabled: IdentityHashMap<Definition<*>, IConfig>
+
+   private object ConfigPairComparator : Comparator<Pair<*, *>> {
+      override fun compare(a: Pair<*, *>, b: Pair<*, *>): Int {
+         return compareValues(a.first as Comparable<Any>, b.first as Comparable<Any>)
+      }
+   }
+
+   private object CheckersConfigComparator : Comparator<CheckersConfig> {
+      override fun compare(a: CheckersConfig, b: CheckersConfig): Int {
+         return compareValues(a, b)
+      }
+   }
 
    init {
       this.builtinAnalysisConfig = builtinAnalysisConfig;
@@ -95,7 +109,7 @@ public data class SAConfiguration(builtinAnalysisConfig: BuiltinAnalysisConfig =
 
    public fun sort(): Boolean {
       val old: Int = this.linkedHashCode();
-      var `$this$mapTo$iv`: java.lang.Iterable = CollectionsKt.sortedWith(MapsKt.toList(this.configurations), new SAConfiguration$sort$$inlined$compareBy$1());
+      var `$this$mapTo$iv`: java.lang.Iterable = CollectionsKt.sortedWith(MapsKt.toList(this.configurations), ConfigPairComparator);
       val `destination$iv`: java.util.Map = new LinkedHashMap();
 
       for (Object element$iv : $this$mapTo$iv) {
@@ -104,7 +118,7 @@ public data class SAConfiguration(builtinAnalysisConfig: BuiltinAnalysisConfig =
       }
 
       this.configurations = `destination$iv` as LinkedHashMap<java.langString, LinkedHashSet<ConfigSerializable>>;
-      `$this$mapTo$iv` = CollectionsKt.sortedWith(CollectionsKt.toList(this.checkers), new SAConfiguration$sort$$inlined$compareBy$2());
+      `$this$mapTo$iv` = CollectionsKt.sortedWith(CollectionsKt.toList(this.checkers), CheckersConfigComparator);
       val var13: java.util.Collection = new LinkedHashSet();
 
       for (Object item$iv : $this$mapTo$iv) {

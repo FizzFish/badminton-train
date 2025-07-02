@@ -9,6 +9,10 @@ import com.github.benmanes.caffeine.cache.CacheLoader
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.benmanes.caffeine.cache.LoadingCache
 import com.googlecode.d2j.dex.Dex2jar
+import com.googlecode.d2j.dex.DexExceptionHandler
+import com.googlecode.d2j.reader.BaseDexFileReader
+import com.googlecode.d2j.reader.MultiDexFileReader
+import com.googlecode.dex2jar.tools.BaksmaliBaseDexExceptionHandler
 import java.io.Closeable
 import java.io.File
 import java.io.InputStream
@@ -18,9 +22,14 @@ import java.nio.file.OpenOption
 import java.nio.file.Path
 import java.util.Arrays
 import java.util.Optional
+import java.time.LocalDateTime
 import kotlin.io.path.PathsKt
 import kotlin.jvm.internal.SourceDebugExtension
+import kotlin.jvm.internal.Ref.ObjectRef
 import kotlin.jvm.optionals.OptionalsKt
+import org.utbot.common.LoggerWithLogMethod
+import org.utbot.common.LoggingKt
+import org.utbot.common.Maybe
 import mu.KLogger
 import mu.KotlinLogging
 import soot.ClassSource
@@ -51,7 +60,22 @@ public object SootUtils {
       computeFrames: Boolean = true,
       topoLogicalSort: Boolean = true
    ): Path {
-      ResourceKt.findCacheFromDeskOrCreate(dexSource, output, SootUtils::dex2jar$lambda$2);
+      ResourceKt.findCacheFromDeskOrCreate(dexSource, output) {
+         `dex2jar\$lambda\$2`(
+            dexSource,
+            output,
+            notHandleException,
+            reuseReg,
+            debugInfo,
+            optmizeSynchronized,
+            printIR,
+            noCode,
+            skipExceptions,
+            dontSanitizeNames,
+            computeFrames,
+            topoLogicalSort
+         )
+      }
       return output;
    }
 
@@ -110,6 +134,66 @@ public object SootUtils {
          }
 
          return output;
+      }
+   }
+
+   @JvmStatic
+   private fun `dex2jar\$lambda\$2`(
+      `$dexSource`: Path,
+      `$output`: Path,
+      `$notHandleException`: Boolean,
+      `$reuseReg`: Boolean,
+      `$debugInfo`: Boolean,
+      `$optmizeSynchronized`: Boolean,
+      `$printIR`: Boolean,
+      `$noCode`: Boolean,
+      `$skipExceptions`: Boolean,
+      `$dontSanitizeNames`: Boolean,
+      `$computeFrames`: Boolean,
+      `$topoLogicalSort`: Boolean
+   ) {
+      val `$this$bracket_u24default$iv`: LoggerWithLogMethod = LoggingKt.info(logger)
+      val `$msg$iv`: String = "dex2jar ${`$dexSource`} -> ${`$output`}"
+      `$this$bracket_u24default$iv`.logMethod.invoke { `SootUtils$dex2jar$lambda$2$$inlined$bracket$default$1`(`$msg$iv`) }
+      val `$startTime$iv`: LocalDateTime = LocalDateTime.now()
+      val `res$iv`: ObjectRef = ObjectRef()
+      `res$iv`.element = Maybe.empty()
+
+      try {
+         val reader: BaseDexFileReader = MultiDexFileReader.open(Files.readAllBytes(`$dexSource`))
+         val handler = if (`$notHandleException`) null else BaksmaliBaseDexExceptionHandler()
+         val it = Dex2jar.from(reader).withExceptionHandler(handler as DexExceptionHandler?).reUseReg(`$reuseReg`)
+         if (`$topoLogicalSort`) it.topoLogicalSort()
+         it.skipDebug(!`$debugInfo`)
+            .optimizeSynchronized(`$optmizeSynchronized`)
+            .printIR(`$printIR`)
+            .noCode(`$noCode`)
+            .skipExceptions(`$skipExceptions`)
+            .dontSanitizeNames(`$dontSanitizeNames`)
+            .computeFrames(`$computeFrames`)
+            .to(`$output`)
+         `res$iv`.element = Maybe(Unit)
+         (`res$iv`.element as Maybe).getOrThrow()
+         if ((`res$iv`.element as Maybe).getHasValue()) {
+            `$this$bracket_u24default$iv`.logMethod.invoke {
+               `SootUtils$dex2jar$lambda$2$$inlined$bracket$default$2`(`$startTime$iv`, `$msg$iv`, `res$iv`)
+            }
+         } else {
+            `$this$bracket_u24default$iv`.logMethod.invoke {
+               `SootUtils$dex2jar$lambda$2$$inlined$bracket$default$3`(`$startTime$iv`, `$msg$iv`)
+            }
+         }
+      } catch (t: Throwable) {
+         if ((`res$iv`.element as Maybe).getHasValue()) {
+            `$this$bracket_u24default$iv`.logMethod.invoke {
+               `SootUtils$dex2jar$lambda$2$$inlined$bracket$default$5`(`$startTime$iv`, `$msg$iv`, `res$iv`)
+            }
+         } else {
+            `$this$bracket_u24default$iv`.logMethod.invoke {
+               `SootUtils$dex2jar$lambda$2$$inlined$bracket$default$6`(`$startTime$iv`, `$msg$iv`)
+            }
+         }
+         throw t
       }
    }
 
@@ -215,6 +299,59 @@ public object SootUtils {
 
    public fun cleanUp() {
       sootClass2classFileCache.cleanUp();
+   }
+
+   @JvmStatic
+   fun `SootUtils$dex2jar$lambda$2$$inlined$bracket$default$1`(`$msg`: String): Any {
+      return "Started: ${`$msg`}"
+   }
+
+   @JvmStatic
+   fun `SootUtils$dex2jar$lambda$2$$inlined$bracket$default$2`(
+      `$startTime`: LocalDateTime,
+      `$msg`: String,
+      `$res`: ObjectRef
+   ): Any {
+      val var1: LocalDateTime = `$startTime`
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} "
+   }
+
+   @JvmStatic
+   fun `SootUtils$dex2jar$lambda$2$$inlined$bracket$default$3`(
+      `$startTime`: LocalDateTime,
+      `$msg`: String
+   ): Any {
+      val var1: LocalDateTime = `$startTime`
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} <Nothing>"
+   }
+
+   @JvmStatic
+   fun `SootUtils$dex2jar$lambda$2$$inlined$bracket$default$4`(
+      `$startTime`: LocalDateTime,
+      `$msg`: String,
+      `$t`: Throwable
+   ): Any {
+      val var1: LocalDateTime = `$startTime`
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} :: EXCEPTION :: "
+   }
+
+   @JvmStatic
+   fun `SootUtils$dex2jar$lambda$2$$inlined$bracket$default$5`(
+      `$startTime`: LocalDateTime,
+      `$msg`: String,
+      `$res`: ObjectRef
+   ): Any {
+      val var1: LocalDateTime = `$startTime`
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} "
+   }
+
+   @JvmStatic
+   fun `SootUtils$dex2jar$lambda$2$$inlined$bracket$default$6`(
+      `$startTime`: LocalDateTime,
+      `$msg`: String
+   ): Any {
+      val var1: LocalDateTime = `$startTime`
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} <Nothing>"
    }
 
    @JvmStatic

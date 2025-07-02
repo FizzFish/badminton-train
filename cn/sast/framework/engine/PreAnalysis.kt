@@ -369,6 +369,59 @@ public class PreAnalysis(mainConfig: MainConfig) {
       return Unit.INSTANCE;
    }
 
+   @JvmStatic
+   fun `PreAnalysis$analyzeInScene$$inlined$bracket$default$1`(`$msg`: String): Any {
+      return "Started: ${`$msg`}";
+   }
+
+   @JvmStatic
+   fun `PreAnalysis$analyzeInScene$$inlined$bracket$default$2`(
+      `$startTime`: LocalDateTime,
+      `$msg`: String,
+      `$res`: ObjectRef
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} ";
+   }
+
+   @JvmStatic
+   fun `PreAnalysis$analyzeInScene$$inlined$bracket$default$3`(
+      `$startTime`: LocalDateTime,
+      `$msg`: String
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} <Nothing>";
+   }
+
+   @JvmStatic
+   fun `PreAnalysis$analyzeInScene$$inlined$bracket$default$4`(
+      `$startTime`: LocalDateTime,
+      `$msg`: String,
+      `$t`: Throwable
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} :: EXCEPTION :: ";
+   }
+
+   @JvmStatic
+   fun `PreAnalysis$analyzeInScene$$inlined$bracket$default$5`(
+      `$startTime`: LocalDateTime,
+      `$msg`: String,
+      `$res`: ObjectRef
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} ";
+   }
+
+   @JvmStatic
+   fun `PreAnalysis$analyzeInScene$$inlined$bracket$default$6`(
+      `$startTime`: LocalDateTime,
+      `$msg`: String
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} <Nothing>";
+   }
+
    public companion object {
       private final val logger: KLogger
    }

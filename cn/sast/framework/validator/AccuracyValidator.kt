@@ -55,6 +55,8 @@ import kotlinx.coroutines.Job
 import kotlinx.serialization.SerializersKt
 import mu.KLogger
 import mu.KotlinLogging
+import java.util.Comparator
+import kotlin.comparisons.compareValues
 
 @SourceDebugExtension(["SMAP\nPrecisionMeasurement.kt\nKotlin\n*S Kotlin\n*F\n+ 1 PrecisionMeasurement.kt\ncn/sast/framework/validator/AccuracyValidator\n+ 2 _Collections.kt\nkotlin/collections/CollectionsKt___CollectionsKt\n+ 3 ProcessRule.kt\ncom/feysh/corax/config/api/rules/ProcessRule\n+ 4 fake.kt\nkotlin/jvm/internal/FakeKt\n*L\n1#1,423:1\n1557#2:424\n1628#2,3:425\n1053#2:429\n24#3:428\n1#4:430\n*S KotlinDebug\n*F\n+ 1 PrecisionMeasurement.kt\ncn/sast/framework/validator/AccuracyValidator\n*L\n86#1:424\n86#1:425,3\n81#1:429\n86#1:428\n*E\n"])
 public class AccuracyValidator(mainConfig: MainConfig) {
@@ -62,10 +64,22 @@ public class AccuracyValidator(mainConfig: MainConfig) {
    private final val logger: KLogger
    private final val extensions: List<String>
 
+   private object AnnotationLineComparator : Comparator<ExpectBugAnnotationData> {
+      override fun compare(a: ExpectBugAnnotationData, b: ExpectBugAnnotationData): Int {
+         return compareValues(a.line, b.line)
+      }
+   }
+
+   private object RowTypeComparator : Comparator<RowType> {
+      override fun compare(a: RowType, b: RowType): Int {
+         return compareValues(a.toString(), b.toString())
+      }
+   }
+
    public final val str: String
       public final get() {
          return "\"${CollectionsKt.joinToString$default(
-            CollectionsKt.sortedWith(`$this$str`, new AccuracyValidator$special$$inlined$sortedBy$1()),
+            CollectionsKt.sortedWith(`$this$str`, AnnotationLineComparator),
             "\n",
             null,
             null,
@@ -503,7 +517,7 @@ public class AccuracyValidator(mainConfig: MainConfig) {
                   var var177: Int = 0;
                   var var187: Int = 0;
 
-                  for (RowType checkType : CollectionsKt.sortedWith(rowTypes, new AccuracyValidator$makeScore$2$invokeSuspend$$inlined$sortedBy$1())) {
+                  for (RowType checkType : CollectionsKt.sortedWith(rowTypes, RowTypeComparator)) {
                      var var213: java.lang.String = null;
                      var endRow: java.lang.String = null;
                      if (var208 is RowCheckType) {

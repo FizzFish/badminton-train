@@ -10,6 +10,7 @@ import java.nio.file.Path
 import java.util.Arrays
 import java.util.LinkedHashMap
 import java.util.Map.Entry
+import java.util.Comparator
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.jvm.internal.SourceDebugExtension
@@ -17,6 +18,18 @@ import kotlin.jvm.internal.SourceDebugExtension
 @SourceDebugExtension(["SMAP\nCounter.kt\nKotlin\n*S Kotlin\n*F\n+ 1 Counter.kt\ncn/sast/api/report/Counter\n+ 2 Maps.kt\nkotlin/collections/MapsKt__MapsKt\n+ 3 _Collections.kt\nkotlin/collections/CollectionsKt___CollectionsKt\n*L\n1#1,53:1\n462#2:54\n412#2:55\n1246#3,4:56\n1062#3:60\n1216#3,2:61\n1246#3,4:63\n1053#3:67\n*S KotlinDebug\n*F\n+ 1 Counter.kt\ncn/sast/api/report/Counter\n*L\n26#1:54\n26#1:55\n26#1:56,4\n26#1:60\n27#1:61,2\n27#1:63,4\n36#1:67\n*E\n"])
 public class Counter<T> {
    private final var statistics: ConcurrentHashMap<Any, AtomicInteger> = new ConcurrentHashMap()
+
+   private object SortMapDescendingComparator : Comparator<Entry<Any, Int>> {
+      override fun compare(a: Entry<Any, Int>, b: Entry<Any, Int>): Int {
+         return b.value.compareTo(a.value)
+      }
+   }
+
+   private object KeyStringComparator : Comparator<Any> {
+      override fun compare(a: Any, b: Any): Int {
+         return a.toString().compareTo(b.toString())
+      }
+   }
 
    public fun count(item: Any, map: MutableMap<Any, AtomicInteger>) {
       var var7: AtomicInteger = new AtomicInteger();
@@ -46,7 +59,7 @@ public class Counter<T> {
          `$this$associateByTo$iv$iv`.put((it as Entry).getKey(), ((it as Entry).getValue() as AtomicInteger).get());
       }
 
-      val var19: java.lang.Iterable = CollectionsKt.sortedWith(`$this$associateByTo$iv$iv`.entrySet(), new Counter$sortMap$$inlined$sortedByDescending$1());
+      val var19: java.lang.Iterable = CollectionsKt.sortedWith(`$this$associateByTo$iv$iv`.entrySet(), SortMapDescendingComparator);
       val `destination$iv$ivx`: java.util.Map = new LinkedHashMap(
          RangesKt.coerceAtLeast(MapsKt.mapCapacity(CollectionsKt.collectionSizeOrDefault(var19, 10)), 16)
       );
@@ -74,7 +87,7 @@ public class Counter<T> {
                   val var17: OutputStreamWriter = var15 as OutputStreamWriter;
                   (var15 as OutputStreamWriter).write("--------sort--------\n");
 
-                  for (Object item : CollectionsKt.sortedWith(statistics.keySet(), new Counter$writeResults$lambda$6$$inlined$sortedBy$1())) {
+                  for (Object item : CollectionsKt.sortedWith(statistics.keySet(), KeyStringComparator)) {
                      var17.write("$var19\n");
                   }
 
