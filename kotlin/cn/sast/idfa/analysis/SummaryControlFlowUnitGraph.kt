@@ -3,27 +3,60 @@
 
 package cn.sast.idfa.analysis
 
-public open class SummaryControlFlowUnitGraph public constructor(method: soot.SootMethod, icfg: cn.sast.idfa.analysis.InterproceduralCFG) : soot.toolkits.graph.DirectedGraph<soot.Unit> {
-    public final val method: soot.SootMethod /* compiled code */
+import kotlin.collections.MutableIterator
+import soot.toolkits.graph.DirectedGraph
+import soot.toolkits.graph.UnitGraph
+import soot.toolkits.graph.ExceptionalUnitGraphFactory
+import soot.jimple.Jimple
+import soot.jimple.JimpleBody
+import soot.jimple.StringConstant
+import soot.SootMethod
+import soot.SootMethodRef
+import soot.RefType
+import soot.Scene
+import soot.Type
+import soot.Value
+import soot.Unit
+import soot.LocalGenerator
 
-    public final val icfg: cn.sast.idfa.analysis.InterproceduralCFG /* compiled code */
+/**
+ * A tiny wrapper graph used for summary edges in the interprocedural CFG.
+ */
+class SummaryControlFlowUnitGraph(
+    val method: SootMethod,
+    val icfg: InterproceduralCFG
+) : DirectedGraph<Unit> {
 
-    public final val jimp: soot.jimple.Jimple /* compiled code */
+    val jimp: Jimple = Jimple.v()
+    val body: JimpleBody = jimp.newBody(method)
+    var graph: UnitGraph
 
-    public final val body: soot.jimple.JimpleBody /* platform type */ /* compiled code */
+    init {
+        require(!method.hasActiveBody()) { "$method hasActiveBody" }
 
-    public final var graph: soot.toolkits.graph.UnitGraph /* compiled code */
+        val units = body.units
+        val lg: LocalGenerator = Scene.v().createLocalGenerator(body)
+        val typeV: Type = RefType.v("java.lang.Error")
+        val local = lg.generateLocal(typeV)
+        val assign = jimp.newAssignStmt(local, jimp.newNewExpr(typeV))
+        units.add(assign)
+        val cref: SootMethodRef =
+            typeV.sootClass.getMethod("<init>", listOf(RefType.v("java.lang.String"))).makeRef()
+        val invoke = jimp.newInvokeStmt(jimp.newSpecialInvokeExpr(local, cref, StringConstant.v("phantom method body")))
+        units.insertAfter(invoke, assign)
+        units.insertAfter(jimp.newThrowStmt(local), invoke)
+        for (it in units.nonPatchingChain) {
+            icfg.setOwnerStatement(it, method)
+        }
+        graph = ExceptionalUnitGraphFactory.createExceptionalUnitGraph(body)
+    }
 
-    public open operator fun iterator(): kotlin.collections.MutableIterator<soot.Unit> { /* compiled code */ }
-
-    public open fun getHeads(): kotlin.collections.List<soot.Unit> { /* compiled code */ }
-
-    public open fun getTails(): kotlin.collections.List<soot.Unit> { /* compiled code */ }
-
-    public open fun getPredsOf(s: soot.Unit): kotlin.collections.List<soot.Unit> { /* compiled code */ }
-
-    public open fun getSuccsOf(s: soot.Unit): kotlin.collections.List<soot.Unit> { /* compiled code */ }
-
-    public open fun size(): kotlin.Int { /* compiled code */ }
+    override fun iterator(): MutableIterator<Unit> = graph.iterator()
+    override fun getHeads(): List<Unit> = graph.heads
+    override fun getTails(): List<Unit> = graph.tails
+    override fun getPredsOf(s: Unit): List<Unit> = graph.getPredsOf(s)
+    override fun getSuccsOf(s: Unit): List<Unit> = graph.getSuccsOf(s)
+    override fun size(): Int = graph.size()
 }
+
 

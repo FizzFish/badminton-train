@@ -1,92 +1,157 @@
-// IntelliJ API Decompiler stub source generated from a class file
-// Implementation of methods is not available
-
 package cn.sast.idfa.analysis
 
-public open class Context<M, N, A> : soot.Context, kotlin.Comparable<cn.sast.idfa.analysis.Context<M, N, A>> {
-    public companion object {
-        public final val count: java.util.concurrent.atomic.AtomicInteger /* compiled code */
+import cn.sast.framework.graph.PseudoTopologicalOrderer
+import kotlin.Comparator
+import kotlin.Pair
+import kotlin.Triple
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.NavigableSet
+import java.util.TreeSet
+import soot.toolkits.graph.DirectedGraph
 
-        public final fun reset(): kotlin.Unit { /* compiled code */ }
+/**
+ * Context of data-flow analysis for a single method.
+ */
+open class Context<M, N, A>(
+    method: M,
+    cfg: DirectedGraph<N>,
+    reverse: Boolean,
+    isAnalyzable: Boolean
+) : soot.Context, Comparable<Context<M, N, A>> {
+
+    var isAnalyzable: Boolean = isAnalyzable
+    var isAnalysed: Boolean = false
+        private set
+    var skipAnalysis: Boolean = false
+    var pathSensitiveEnable: Boolean = true
+
+    var iteratorCount: MutableMap<N, Int>? = HashMap()
+    var widenNode: MutableSet<Pair<N, N>>? = HashSet()
+
+    var controlFlowGraph: DirectedGraph<N> = cfg
+        private set
+
+    var entryValue: A? = null
+        private set
+
+    var exitValue: A? = null
+        private set
+
+    var id: Int = count.getAndIncrement()
+        private set
+
+    var method: M = method
+        private set
+
+    private var orderedNodes: List<N>? = null
+    private var inValues: MutableMap<N, A>? = LinkedHashMap(cfg.size())
+    private var edgeValues: MutableMap<Pair<N, N>, A>? = LinkedHashMap(cfg.size() * 2)
+    private var callCalleeEdgeValues: MutableMap<Triple<N, M, A>, A>? = LinkedHashMap(cfg.size() / 2)
+
+    var worklist: NavigableSet<Pair<N, N>> = TreeSet()
+        private set
+
+    private lateinit var numbers: Map<Pair<N, N>, Int>
+
+    private var callNode: N? = null
+    var bottomValue: A? = null
+
+    init {
+        val orderer = PseudoTopologicalOrderer<N>()
+        val nodes = orderer.newList(controlFlowGraph, reverse)
+        orderedNodes = nodes
+        val numMap = HashMap<Pair<N, N>, Int>()
+        var num = 1
+        for (n in nodes) {
+            val succs = cfg.getSuccsOf(n)
+            if (succs.isEmpty()) {
+                numMap[Pair(n, n)] = num++
+            } else {
+                for (succ in cfg.getSuccsOf(n)) {
+                    numMap[Pair(n, succ)] = num++
+                }
+            }
+        }
+        numbers = numMap
+        worklist = TreeSet(Comparator { u, v ->
+            numbers[u]!! - numbers[v]!!
+        })
     }
 
-    public constructor(method: M, cfg: soot.toolkits.graph.DirectedGraph<N>, reverse: kotlin.Boolean, isAnalyzable: kotlin.Boolean) { /* compiled code */ }
+    override fun compareTo(other: Context<M, N, A>): Int = other.id - id
 
-    public final var isAnalyzable: kotlin.Boolean /* compiled code */
+    fun getEdgeValue(node: N, succ: N): A {
+        val map = edgeValues!!
+        return map[Pair(node, succ)] ?: bottomValue!!
+    }
 
-    public final var isAnalysed: kotlin.Boolean /* compiled code */
-        private final set(value: kotlin.Boolean) {/* compiled code */ }
+    fun setEdgeValue(node: N, succ: N, value: A) {
+        edgeValues!![Pair(node, succ)] = value
+    }
 
-    public final var skipAnalysis: kotlin.Boolean /* compiled code */
+    fun getValueBefore(node: N): A? = inValues!![node]
 
-    public final var pathSensitiveEnable: kotlin.Boolean /* compiled code */
+    fun markAnalysed() {
+        isAnalysed = true
+        callCalleeEdgeValues = null
+        edgeValues = null
+        inValues = null
+        iteratorCount = null
+        widenNode = null
+    }
 
-    public final var iteratorCount: kotlin.collections.MutableMap<N, kotlin.Int>? /* compiled code */
+    fun setEntryValue(entryValue: A) { this.entryValue = entryValue }
+    fun setExitValue(exitValue: A) { this.exitValue = exitValue }
+    fun setValueBefore(node: N, value: A) { inValues!![node] = value }
 
-    public final var widenNode: kotlin.collections.MutableSet<kotlin.Pair<N, N>>? /* compiled code */
+    override fun toString(): String = (if (isAnalyzable) "" else "NN") + " " + id + " : + " + method
 
-    public final var controlFlowGraph: soot.toolkits.graph.DirectedGraph<N> /* compiled code */
-        private final set(value: soot.toolkits.graph.DirectedGraph<N>) {/* compiled code */ }
+    fun initworklist() {
+        isAnalysed = false
+        for (n in orderedNodes!!) {
+            val succs = controlFlowGraph.getSuccsOf(n)
+            if (succs.isEmpty()) {
+                worklist.add(Pair(n, n))
+                setEdgeValue(n, n, bottomValue!!)
+            } else {
+                for (succ in succs) {
+                    worklist.add(Pair(n, succ))
+                    setEdgeValue(n, succ, bottomValue!!)
+                }
+            }
+        }
+    }
 
-    public final var entryValue: A? /* compiled code */
-        private final set(value: A?) {/* compiled code */ }
+    fun clearWorkList() = worklist.clear()
 
-    public final var exitValue: A? /* compiled code */
-        private final set(value: A?) {/* compiled code */ }
+    fun addToWorklist(node: N) {
+        val succs = controlFlowGraph.getSuccsOf(node)
+        if (succs.isEmpty()) {
+            worklist.add(Pair(node, node))
+        } else {
+            for (succ in succs) {
+                worklist.add(Pair(node, succ))
+            }
+        }
+    }
 
-    public final var id: kotlin.Int /* compiled code */
-        private final set(value: kotlin.Int) {/* compiled code */ }
+    fun setCallNode(callNode: N) { this.callNode = callNode }
+    fun getCallNode(): N? = callNode
+    fun hasCallNode(): Boolean = callNode != null
 
-    public final var method: M /* compiled code */
-        private final set(value: M) {/* compiled code */ }
+    fun getCallEdgeValue(node: N, callee: M, entryValue: A): A? =
+        callCalleeEdgeValues!![Triple(node, callee, entryValue)]
 
-    private final var orderedNodes: kotlin.collections.List<N>? /* compiled code */
+    fun setCallEdgeValue(node: N, callee: M, entryValue: A, out: A) {
+        callCalleeEdgeValues!![Triple(node, callee, entryValue)] = out
+    }
 
-    private final var inValues: kotlin.collections.MutableMap<N, A>? /* compiled code */
-
-    private final var edgeValues: kotlin.collections.MutableMap<kotlin.Pair<N, N>, A>? /* compiled code */
-
-    private final var callCalleeEdgeValues: kotlin.collections.MutableMap<kotlin.Triple<N, M, A>, A>? /* compiled code */
-
-    public final var worklist: java.util.NavigableSet<kotlin.Pair<N, N>> /* compiled code */
-        private final set(value: java.util.NavigableSet<kotlin.Pair<N, N>>) {/* compiled code */ }
-
-    private final var callNode: N? /* compiled code */
-
-    public final var bottomValue: A? /* compiled code */
-
-    public open operator fun compareTo(other: cn.sast.idfa.analysis.Context<M, N, A>): kotlin.Int { /* compiled code */ }
-
-    public final fun getEdgeValue(node: N, succ: N): A { /* compiled code */ }
-
-    public final fun setEdgeValue(node: N, succ: N, `val`: A): kotlin.Unit { /* compiled code */ }
-
-    public final fun getValueBefore(node: N): A? { /* compiled code */ }
-
-    public final fun markAnalysed(): kotlin.Unit { /* compiled code */ }
-
-    public final fun setEntryValue(entryValue: A): kotlin.Unit { /* compiled code */ }
-
-    public final fun setExitValue(exitValue: A): kotlin.Unit { /* compiled code */ }
-
-    public final fun setValueBefore(node: N, value: A): kotlin.Unit { /* compiled code */ }
-
-    public open fun toString(): kotlin.String { /* compiled code */ }
-
-    public final fun initworklist(): kotlin.Unit { /* compiled code */ }
-
-    public final fun clearWorkList(): kotlin.Unit { /* compiled code */ }
-
-    public final fun addToWorklist(node: N): kotlin.Unit { /* compiled code */ }
-
-    public final fun setCallNode(callNode: N): kotlin.Unit { /* compiled code */ }
-
-    public final fun getCallNode(): N? { /* compiled code */ }
-
-    public final fun hasCallNode(): kotlin.Boolean { /* compiled code */ }
-
-    public final fun getCallEdgeValue(node: N, callee: M, entryValue: A): A? { /* compiled code */ }
-
-    public final fun setCallEdgeValue(node: N, callee: M, entryValue: A, out: A): kotlin.Unit { /* compiled code */ }
+    companion object {
+        val count: AtomicInteger = AtomicInteger(0)
+        fun reset() { count.set(0) }
+    }
 }
+
 

@@ -3,15 +3,31 @@
 
 package cn.sast.idfa.analysis
 
-public final enum class FixPointStatus private constructor() : kotlin.Enum<cn.sast.idfa.analysis.FixPointStatus> {
+/**
+ * Status of a node during the fix-point iteration.
+ */
+enum class FixPointStatus {
+    /**
+     * The value associated with the node changed in the last iteration.
+     */
     HasChange,
 
+    /** Reached a fix point without the need of widening. */
     Fixpoint,
 
+    /**
+     * Widening operators are required to speed up convergence.
+     */
     NeedWideningOperators;
 
-    public companion object {
-        public final inline fun of(hasChange: kotlin.Boolean): cn.sast.idfa.analysis.FixPointStatus { /* compiled code */ }
+    companion object {
+        /**
+         * Utility to convert a boolean flag returned from the analysis
+         * into the corresponding [FixPointStatus].
+         */
+        fun of(hasChange: Boolean): FixPointStatus =
+            if (hasChange) HasChange else Fixpoint
     }
 }
+
 
