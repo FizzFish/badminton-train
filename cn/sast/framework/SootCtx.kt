@@ -42,6 +42,8 @@ import java.util.function.Function
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.intrinsics.IntrinsicsKt
 import kotlin.coroutines.jvm.internal.ContinuationImpl
+import java.util.Comparator
+import kotlin.comparisons.compareValues
 import kotlin.jvm.functions.Function1
 import kotlin.jvm.functions.Function2
 import kotlin.jvm.internal.SourceDebugExtension
@@ -131,11 +133,26 @@ public open class SootCtx(mainConfig: MainConfig) : ISootInitializeHandler {
       }
 
 
-   public final val entryPoints: List<SootMethod>
+  public final val entryPoints: List<SootMethod>
       public final get() {
          val var10000: java.util.List = Scene.v().getEntryPoints();
          return var10000;
       }
+
+   private class JarRelativePathComparator(private val ctx: SootCtx) : Comparator<IResFile> {
+      override fun compare(a: IResFile, b: IResFile): Int {
+         return compareValues(
+            ctx.mainConfig.tryGetRelativePath(a).getRelativePath(),
+            ctx.mainConfig.tryGetRelativePath(b).getRelativePath()
+         )
+      }
+   }
+
+   private object StringComparator : Comparator<String> {
+      override fun compare(a: String, b: String): Int {
+         return a.compareTo(b)
+      }
+   }
 
 
    init {
@@ -248,7 +265,7 @@ public open class SootCtx(mainConfig: MainConfig) : ISootInitializeHandler {
          val var48: PhaseIntervalTimer.Snapshot = if (this._cgConstructTimer != null) this._cgConstructTimer.start() else null;
          val var49: LoggerWithLogMethod = LoggingKt.info(logger);
          val var50: java.lang.String = "Constructing the call graph [$cgAlgorithm] ...";
-         var49.getLogMethod().invoke(new SootCtx$constructCallGraph$$inlined$bracket$default$1(var50));
+         var49.getLogMethod().invoke { `SootCtx$constructCallGraph$$inlined$bracket$default$1`(var50) };
          val var58: LocalDateTime = LocalDateTime.now();
          var total: Boolean = (boolean)0;
          val `res$iv`: ObjectRef = new ObjectRef();
@@ -325,24 +342,24 @@ public open class SootCtx(mainConfig: MainConfig) : ISootInitializeHandler {
                var63.stop();
                logger.info(SootCtx::constructCallGraph$lambda$8$lambda$6);
             } catch (var33: java.lang.Throwable) {
-               var49.getLogMethod().invoke(new SootCtx$constructCallGraph$$inlined$bracket$default$4(var58, var50, var33));
+               var49.getLogMethod().invoke { `SootCtx$constructCallGraph$$inlined$bracket$default$4`(var58, var50, var33) };
                total = (boolean)1;
                throw var33;
             }
          } catch (var34: java.lang.Throwable) {
             if (!total) {
                if ((`res$iv`.element as Maybe).getHasValue()) {
-                  var49.getLogMethod().invoke(new SootCtx$constructCallGraph$$inlined$bracket$default$5(var58, var50, `res$iv`));
+                  var49.getLogMethod().invoke { `SootCtx$constructCallGraph$$inlined$bracket$default$5`(var58, var50, `res$iv`) };
                } else {
-                  var49.getLogMethod().invoke(new SootCtx$constructCallGraph$$inlined$bracket$default$6(var58, var50));
+                  var49.getLogMethod().invoke { `SootCtx$constructCallGraph$$inlined$bracket$default$6`(var58, var50) };
                }
             }
          }
 
          if ((`res$iv`.element as Maybe).getHasValue()) {
-            var49.getLogMethod().invoke(new SootCtx$constructCallGraph$$inlined$bracket$default$2(var58, var50, `res$iv`));
+            var49.getLogMethod().invoke { `SootCtx$constructCallGraph$$inlined$bracket$default$2`(var58, var50, `res$iv`) };
          } else {
-            var49.getLogMethod().invoke(new SootCtx$constructCallGraph$$inlined$bracket$default$3(var58, var50));
+            var49.getLogMethod().invoke { `SootCtx$constructCallGraph$$inlined$bracket$default$3`(var58, var50) };
          }
 
          val var71: Timer = this._cgConstructTimer;
@@ -694,7 +711,7 @@ public open class SootCtx(mainConfig: MainConfig) : ISootInitializeHandler {
       }
 
       val jars: java.util.List = CollectionsKt.sortedWith(
-         extract as java.util.List, new SootCtx$findClassesInnerJarUnderAutoAppClassPath$$inlined$sortedBy$1(this)
+         extract as java.util.List, JarRelativePathComparator(this)
       );
       val var28: LinkedHashSet = new LinkedHashSet();
       val var30: java.util.Iterator = jars.iterator();
@@ -1790,7 +1807,7 @@ public open class SootCtx(mainConfig: MainConfig) : ISootInitializeHandler {
       val var10002: java.util.List = Options.v().process_dir();
       return "\nsoot classpath:\n ${CollectionsKt.joinToString$default(
          CollectionsKt.sortedWith(
-            CollectionsKt.plus(var10000, CollectionsKt.minus(var6, CollectionsKt.toSet(var10002))), new SootCtx$loadClasses$lambda$37$$inlined$sortedBy$1()
+            CollectionsKt.plus(var10000, CollectionsKt.minus(var6, CollectionsKt.toSet(var10002))), StringComparator
          ),
          "\n",
          null,
@@ -1813,7 +1830,7 @@ public open class SootCtx(mainConfig: MainConfig) : ISootInitializeHandler {
    fun `loadClasses$lambda$40`(`this$0`: SootCtx): Any {
       val var10000: java.util.List = Options.v().process_dir();
       return "\nsoot process_dir:\n ${CollectionsKt.joinToString$default(
-         CollectionsKt.sortedWith(var10000, new SootCtx$loadClasses$lambda$40$$inlined$sortedBy$1()),
+         CollectionsKt.sortedWith(var10000, StringComparator),
          "\n",
          null,
          null,
@@ -1846,8 +1863,167 @@ public open class SootCtx(mainConfig: MainConfig) : ISootInitializeHandler {
    }
 
    @JvmStatic
-   fun `logger$lambda$51`(): Unit {
+  fun `logger$lambda$51`(): Unit {
       return Unit.INSTANCE;
+  }
+
+   @JvmStatic
+   fun `SootCtx$constructCallGraph$$inlined$bracket$default$1`(`$msg`: java.lang.String): Any {
+      return "Started: ${`$msg`}";
+   }
+
+   @JvmStatic
+   fun `SootCtx$constructCallGraph$$inlined$bracket$default$2`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$res`: ObjectRef
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} ";
+   }
+
+   @JvmStatic
+   fun `SootCtx$constructCallGraph$$inlined$bracket$default$3`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} <Nothing>";
+   }
+
+   @JvmStatic
+   fun `SootCtx$constructCallGraph$$inlined$bracket$default$4`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$t`: java.lang.Throwable
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} :: EXCEPTION :: ";
+   }
+
+   @JvmStatic
+   fun `SootCtx$constructCallGraph$$inlined$bracket$default$5`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$res`: ObjectRef
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} ";
+   }
+
+   @JvmStatic
+   fun `SootCtx$constructCallGraph$$inlined$bracket$default$6`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} <Nothing>";
+   }
+
+   @JvmStatic
+   fun `SootCtx$loadClasses$$inlined$bracket$default$1`(`$msg`: java.lang.String): Any {
+      return "Started: ${`$msg`}";
+   }
+
+   @JvmStatic
+   fun `SootCtx$loadClasses$$inlined$bracket$default$2`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$res`: ObjectRef
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} ";
+   }
+
+   @JvmStatic
+   fun `SootCtx$loadClasses$$inlined$bracket$default$3`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} <Nothing>";
+   }
+
+   @JvmStatic
+   fun `SootCtx$loadClasses$$inlined$bracket$default$4`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$t`: java.lang.Throwable
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} :: EXCEPTION :: ";
+   }
+
+   @JvmStatic
+   fun `SootCtx$loadClasses$$inlined$bracket$default$5`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$res`: ObjectRef
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} ";
+   }
+
+   @JvmStatic
+   fun `SootCtx$loadClasses$$inlined$bracket$default$6`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} <Nothing>";
+   }
+
+   @JvmStatic
+   fun `SootCtx$onAfterCallGraphConstruction$$inlined$bracket$default$1`(`$msg`: java.lang.String): Any {
+      return "Started: ${`$msg`}";
+   }
+
+   @JvmStatic
+   fun `SootCtx$onAfterCallGraphConstruction$$inlined$bracket$default$2`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$res`: ObjectRef
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} ";
+   }
+
+   @JvmStatic
+   fun `SootCtx$onAfterCallGraphConstruction$$inlined$bracket$default$3`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} <Nothing>";
+   }
+
+   @JvmStatic
+   fun `SootCtx$onAfterCallGraphConstruction$$inlined$bracket$default$4`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$t`: java.lang.Throwable
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} :: EXCEPTION :: ";
+   }
+
+   @JvmStatic
+   fun `SootCtx$onAfterCallGraphConstruction$$inlined$bracket$default$5`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String,
+      `$res`: ObjectRef
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} ";
+   }
+
+   @JvmStatic
+   fun `SootCtx$onAfterCallGraphConstruction$$inlined$bracket$default$6`(
+      `$startTime`: LocalDateTime,
+      `$msg`: java.lang.String
+   ): Any {
+      val var1: LocalDateTime = `$startTime`;
+      return "Finished (in ${LoggingKt.elapsedSecFrom(var1)}): ${`$msg`} <Nothing>";
    }
 
    public companion object {

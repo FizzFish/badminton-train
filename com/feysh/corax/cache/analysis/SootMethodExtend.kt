@@ -12,6 +12,7 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr
 import com.github.javaparser.ast.nodeTypes.NodeWithRange
 import java.util.ArrayList
 import java.util.Optional
+import java.util.Comparator
 import kotlin.jvm.internal.SourceDebugExtension
 import kotlin.jvm.optionals.OptionalsKt
 import soot.SootClass
@@ -22,6 +23,22 @@ import soot.tagkit.Host
 public data class SootMethodExtend(host: SootMethod, cu: CompilationUnit) : SootHostExtend(host as Host, cu) {
    public open val host: SootMethod
    public open val cu: CompilationUnit
+
+   private object GetMethodsComparator : Comparator<CallableDeclaration<*>> {
+      override fun compare(a: CallableDeclaration<*>, b: CallableDeclaration<*>): Int {
+         val lineA = SootHostExtendKt.getLine(a.begin)
+         val lineB = SootHostExtendKt.getLine(b.begin)
+         return ComparisonsKt.compareValues(lineA, lineB)
+      }
+   }
+
+   private object LambdaExprComparator : Comparator<LambdaExpr> {
+      override fun compare(a: LambdaExpr, b: LambdaExpr): Int {
+         val lineA = SootHostExtendKt.getLine(a.begin)
+         val lineB = SootHostExtendKt.getLine(b.begin)
+         return ComparisonsKt.compareValues(lineA, lineB)
+      }
+   }
 
    public final val classDecl: Node?
       public final get() {
@@ -101,7 +118,7 @@ public data class SootMethodExtend(host: SootMethod, cu: CompilationUnit) : Soot
          }
       }
 
-      val var17: java.util.List = CollectionsKt.sortedWith(`$this$filter$iv` as java.util.List, new SootMethodExtend$getMethods$$inlined$sortedBy$1());
+      val var17: java.util.List = CollectionsKt.sortedWith(`$this$filter$iv` as java.util.List, GetMethodsComparator);
       val var10000: CallableDeclaration;
       if (var17.isEmpty()) {
          var10000 = null;
@@ -265,7 +282,7 @@ public data class SootMethodExtend(host: SootMethod, cu: CompilationUnit) : Soot
                }
 
                val var13: java.util.List = CollectionsKt.sortedWith(
-                  var6 as java.util.List, new SootMethodExtend$lambdaExpr_delegate$lambda$12$$inlined$sortedBy$1()
+                  var6 as java.util.List, LambdaExprComparator
                );
                if (var13 != null) {
                   return `this$0`.getLambdaExprs(var13);
